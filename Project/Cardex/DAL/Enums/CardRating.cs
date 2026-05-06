@@ -1,4 +1,4 @@
-namespace Cardex.Model.Enums;
+namespace Cardex.DAL.Enums;
 
 public enum CardRating
 {

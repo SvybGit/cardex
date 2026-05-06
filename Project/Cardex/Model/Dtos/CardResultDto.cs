@@ -1,4 +1,4 @@
-using Cardex.Model.Enums;
+using Cardex.DAL.Enums;
 
 namespace Cardex.Model.Dtos;
 
