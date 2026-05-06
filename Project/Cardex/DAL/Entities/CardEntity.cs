@@ -1,0 +1,12 @@
+namespace Cardex.DAL.Entities;
+
+public class CardEntity
+{
+    public int Id { get; set; }
+    public int DeckId { get; set; }
+    public string Front { get; set; } = string.Empty;
+    public string Back { get; set; } = string.Empty;
+    public DateTime CreatedAt { get; set; }
+    public DeckEntity Deck { get; set; } = null!;
+    public ICollection<CardResultEntity> CardResults { get; set; } = new List<CardResultEntity>();
+}
