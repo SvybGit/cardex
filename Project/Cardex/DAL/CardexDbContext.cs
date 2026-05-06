@@ -11,6 +11,9 @@ public class CardexDbContext : DbContext
     public DbSet<StudySessionEntity> StudySessions => Set<StudySessionEntity>();
     public DbSet<CardResultEntity> CardResults => Set<CardResultEntity>();
 
+    protected override void OnConfiguring(DbContextOptionsBuilder options)
+        => options.UseSqlite("Data Source=cardex.db");
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -92,5 +95,7 @@ public class CardexDbContext : DbContext
                 .HasMaxLength(32)
                 .HasConversion<string>();
         });
+
+        modelBuilder.SeedTestData();
     }
 }
