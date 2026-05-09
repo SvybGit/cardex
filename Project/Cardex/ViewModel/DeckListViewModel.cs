@@ -6,10 +6,8 @@ using System.Collections.ObjectModel;
 
 namespace ViewModel;
 
-public partial class DeckListViewModel : ObservableObject
+public partial class DeckListViewModel(DeckService deckService) : ObservableObject
 {
-    private readonly DeckService _deckService = new();
-
     [ObservableProperty] public partial ObservableCollection<DeckDto> Decks { get; set; } = [];
 
     [ObservableProperty]
@@ -18,6 +16,7 @@ public partial class DeckListViewModel : ObservableObject
     [ObservableProperty]
     public partial bool IsLoading { get; set; }
 
+    [RelayCommand]
     public async Task LoadDecksAsync()
     {
         if (IsLoading)
@@ -28,7 +27,7 @@ public partial class DeckListViewModel : ObservableObject
         try
         {
             IsLoading = true;
-            Decks = new ObservableCollection<DeckDto>(await _deckService.GetAllDecksAsync());
+            Decks = new ObservableCollection<DeckDto>(await deckService.GetAllDecksAsync());
             
         }
         finally

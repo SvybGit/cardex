@@ -3,16 +3,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Cardex.DAL;
 
-public class CardexDbContext : DbContext
+public class CardexDbContext(DbContextOptions<CardexDbContext> options) : DbContext(options)
 {
     public DbSet<CategoryEntity> Categories => Set<CategoryEntity>();
     public DbSet<DeckEntity> Decks => Set<DeckEntity>();
     public DbSet<CardEntity> Cards => Set<CardEntity>();
     public DbSet<StudySessionEntity> StudySessions => Set<StudySessionEntity>();
     public DbSet<CardResultEntity> CardResults => Set<CardResultEntity>();
-
-    protected override void OnConfiguring(DbContextOptionsBuilder options)
-        => options.UseSqlite("Data Source=cardex.db");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
