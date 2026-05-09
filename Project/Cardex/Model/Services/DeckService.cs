@@ -26,7 +26,7 @@ public class DeckService(CardexDbContext dbContext)
 
     public async Task<DeckDto> CreateDeckAsync(DeckDto deck)
     {
-        if (!await dbContext.Categories.AnyAsync(category => category.Id == deck.CategoryId))
+        if (deck.CategoryId.HasValue && !await dbContext.Categories.AnyAsync(category => category.Id == deck.CategoryId.Value))
         {
             throw new ArgumentException("Category does not exist.", nameof(deck));
         }
@@ -49,7 +49,7 @@ public class DeckService(CardexDbContext dbContext)
             throw new InvalidOperationException("Deck does not exist.");
         }
 
-        if (!await dbContext.Categories.AnyAsync(category => category.Id == deck.CategoryId))
+        if (deck.CategoryId.HasValue && !await dbContext.Categories.AnyAsync(category => category.Id == deck.CategoryId.Value))
         {
             throw new ArgumentException("Category does not exist.", nameof(deck));
         }

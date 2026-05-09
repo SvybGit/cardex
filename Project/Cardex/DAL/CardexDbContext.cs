@@ -27,10 +27,6 @@ public class CardexDbContext(DbContextOptions<CardexDbContext> options) : DbCont
                 .IsRequired()
                 .HasMaxLength(32);
 
-            entity.HasMany(category => category.Decks)
-                .WithOne(deck => deck.Category)
-                .HasForeignKey(deck => deck.CategoryId)
-                .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<DeckEntity>(entity =>
@@ -40,6 +36,12 @@ public class CardexDbContext(DbContextOptions<CardexDbContext> options) : DbCont
             entity.Property(deck => deck.Name)
                 .IsRequired()
                 .HasMaxLength(150);
+
+            entity.HasOne(deck => deck.Category)
+                .WithMany()
+                .HasForeignKey(deck => deck.CategoryId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.Restrict);
 
             entity.HasMany(deck => deck.Cards)
                 .WithOne(card => card.Deck)
