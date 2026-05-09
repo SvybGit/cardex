@@ -28,17 +28,10 @@ public partial class DeckListViewModel(DeckService deckService) : ObservableObje
         {
             IsLoading = true;
             Decks = new ObservableCollection<DeckDto>(await deckService.GetAllDecksAsync());
-            
         }
         finally
         {
             IsLoading = false;
         }
-    }
-
-    [RelayCommand]
-    private void CreateDeck()
-    {
-        // TODO: Navigate to the deck creation view when that page exists.
     }
 }

@@ -2,6 +2,7 @@ using Cardex.DAL;
 using Cardex.Model.Services;
 using CommunityToolkit.Maui;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ViewModel;
 
@@ -36,9 +37,11 @@ public static class MauiProgram
 
         // ViewModels
         builder.Services.AddTransient<DeckListViewModel>();
+        builder.Services.AddTransient<CreateDeckViewModel>();
 
         // Views
         builder.Services.AddTransient<DeckListPage>();
+        builder.Services.AddTransient<CreateDeckPage>();
 
         var app = builder.Build();
         return app;

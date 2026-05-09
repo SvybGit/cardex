@@ -12,9 +12,9 @@
         <toolkit:EventToCommandBehavior EventName="Appearing"
                                         Command="{Binding BindingContext.LoadDecksCommand, Source={x:Reference DecksPage}}" />
     </ContentPage.Behaviors>
-            <VerticalStackLayout Padding="16" Spacing="12">
+    <VerticalStackLayout Padding="16" Spacing="12">
         <Button Text="Create deck"
-                Command="{Binding CreateDeckCommand}" />
+                Clicked="CreateDeckButton_OnClicked" />
 
         <CollectionView ItemsSource="{Binding Decks}"
                         SelectedItem="{Binding SelectedDeck, Mode=TwoWay}"
