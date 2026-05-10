@@ -2,6 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:converters="clr-namespace:View.Converters"
+             xmlns:dto="clr-namespace:Cardex.Model.Dtos;assembly=Model"
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              xmlns:vm="clr-namespace:ViewModel;assembly=ViewModel"
              x:DataType="vm:CreateDeckViewModel"
@@ -18,24 +19,66 @@
                                         Command="{Binding BindingContext.LoadCategoriesCommand, Source={x:Reference CreateDeck}}" />
     </ContentPage.Behaviors>
 
-    <VerticalStackLayout Padding="16" Spacing="12">
-        <Entry Placeholder="Deck name"
-               Text="{Binding Name}" />
+    <Grid Padding="16"
+          RowDefinitions="Auto,*,Auto"
+          RowSpacing="12">
+        <VerticalStackLayout Grid.Row="0"
+                             Spacing="12">
+            <Entry Placeholder="Deck name"
+                   Text="{Binding Name}" />
 
-        <Picker Title="Category"
-                ItemsSource="{Binding Categories}"
-                ItemDisplayBinding="{Binding ., Converter={StaticResource CategoryNameConverter}}"
-                SelectedItem="{Binding SelectedCategory}" />
+            <Picker Title="Category"
+                    ItemsSource="{Binding Categories}"
+                    ItemDisplayBinding="{Binding ., Converter={StaticResource CategoryNameConverter}}"
+                    SelectedItem="{Binding SelectedCategory}" />
 
-        <HorizontalStackLayout Spacing="8">
-            <Button Text="Save"
-                    Command="{Binding SaveDeckCommand}"
-                    Clicked="GoBack"/>
-            <Button Text="Cancel"
-                    Clicked="GoBack" />
-        </HorizontalStackLayout>
+            <Label Text="Cards" />
 
-        <Label Text="{Binding ErrorMessage}"
-               IsVisible="{Binding HasError}" />
-    </VerticalStackLayout>
+            <Entry Placeholder="Question"
+                   Text="{Binding CurrentCardFront}" />
+
+            <Entry Placeholder="Answer"
+                   Text="{Binding CurrentCardBack}" />
+
+            <Button Text="Add card"
+                    Command="{Binding AddCardCommand}" />
+        </VerticalStackLayout>
+
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout BindableLayout.ItemsSource="{Binding CardsToCreate}"
+                                 Spacing="8">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="dto:CardDto">
+                        <Grid ColumnDefinitions="*,Auto"
+                              Padding="0,4">
+                            <VerticalStackLayout Grid.Column="0"
+                                                 Spacing="2">
+                                <Label Text="{Binding Front}"
+                                       FontAttributes="Bold" />
+                                <Label Text="{Binding Back}" />
+                            </VerticalStackLayout>
+                            <Button Grid.Column="1"
+                                    Text="Remove"
+                                    Command="{Binding BindingContext.RemoveCardCommand, Source={x:Reference CreateDeck}}"
+                                    CommandParameter="{Binding .}" />
+                        </Grid>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <VerticalStackLayout Grid.Row="2"
+                             Spacing="12">
+            <HorizontalStackLayout Spacing="8">
+                <Button Text="Save"
+                        Command="{Binding SaveDeckCommand}"
+                        Clicked="GoBack" />
+                <Button Text="Cancel"
+                        Clicked="GoBack" />
+            </HorizontalStackLayout>
+
+            <Label Text="{Binding ErrorMessage}"
+                   IsVisible="{Binding HasError}" />
+        </VerticalStackLayout>
+    </Grid>
 </ContentPage>

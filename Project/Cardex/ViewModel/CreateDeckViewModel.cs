@@ -2,6 +2,7 @@ using Cardex.Model.Dtos;
 using Cardex.Model.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using System.Collections.ObjectModel;
 
 namespace ViewModel;
 
@@ -27,10 +28,23 @@ public partial class CreateDeckViewModel(
     public partial CategoryDto? SelectedCategory { get; set; }
 
     [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(AddCardCommand))]
+    public partial string CurrentCardFront { get; set; } = string.Empty;
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(AddCardCommand))]
+    public partial string CurrentCardBack { get; set; } = string.Empty;
+
+    [ObservableProperty]
+    public partial ObservableCollection<CardDto> CardsToCreate { get; set; } = [];
+
+    [ObservableProperty]
     public partial bool IsLoading { get; set; }
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(SaveDeckCommand))]
+    [NotifyCanExecuteChangedFor(nameof(AddCardCommand))]
+    [NotifyCanExecuteChangedFor(nameof(RemoveCardCommand))]
     public partial bool IsSaving { get; set; }
 
     [ObservableProperty]
@@ -65,6 +79,30 @@ public partial class CreateDeckViewModel(
         }
     }
 
+    [RelayCommand(CanExecute = nameof(CanAddCard))]
+    private void AddCard()
+    {
+        CardsToCreate.Add(new CardDto
+        {
+            Front = CurrentCardFront.Trim(),
+            Back = CurrentCardBack.Trim()
+        });
+
+        CurrentCardFront = string.Empty;
+        CurrentCardBack = string.Empty;
+    }
+
+    [RelayCommand(CanExecute = nameof(CanRemoveCard))]
+    private void RemoveCard(CardDto? card)
+    {
+        if (card is null)
+        {
+            return;
+        }
+
+        CardsToCreate.Remove(card);
+    }
+
     [RelayCommand(CanExecute = nameof(CanSaveDeck))]
     private async Task SaveDeckAsync()
     {
@@ -73,14 +111,26 @@ public partial class CreateDeckViewModel(
             IsSaving = true;
             ErrorMessage = string.Empty;
 
-            await deckService.CreateDeckAsync(new DeckDto
+            var deck = await deckService.CreateDeckAsync(new DeckDto
             {
                 Name = Name.Trim(),
                 CategoryId = SelectedCategory == EmptyCategory ? null : SelectedCategory?.Id
             });
 
+            foreach (var card in CardsToCreate)
+            {
+                await deckService.CreateCardInDeckAsync(deck.Id, new CardDto
+                {
+                    Front = card.Front,
+                    Back = card.Back
+                });
+            }
+
             Name = string.Empty;
             SelectedCategory = EmptyCategory;
+            CardsToCreate.Clear();
+            CurrentCardFront = string.Empty;
+            CurrentCardBack = string.Empty;
         }
         catch (Exception exception)
         {
@@ -95,4 +145,13 @@ public partial class CreateDeckViewModel(
     private bool CanSaveDeck() =>
         !IsSaving
         && !string.IsNullOrWhiteSpace(Name);
+
+    private bool CanAddCard() =>
+        !IsSaving
+        && !string.IsNullOrWhiteSpace(CurrentCardFront)
+        && !string.IsNullOrWhiteSpace(CurrentCardBack);
+
+    private bool CanRemoveCard(CardDto? card) =>
+        !IsSaving
+        && card is not null;
 }
