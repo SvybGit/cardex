@@ -1,15 +1,16 @@
+using Cardex.Model.Dtos;
 using ViewModel;
 
 namespace View;
 
-[QueryProperty(nameof(DeckId), "deckId")]
+[QueryProperty(nameof(Deck), "deck")]
 public partial class StudySessionPage : ContentPage
 {
     private readonly StudySessionViewModel viewModel;
 
-    public int DeckId
+    public DeckDto Deck
     {
-        set => viewModel.DeckId = value;
+        set => viewModel.Deck = value;
     }
 
     public StudySessionPage(StudySessionViewModel viewModel)

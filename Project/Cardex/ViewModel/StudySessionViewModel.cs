@@ -15,9 +15,6 @@ public partial class StudySessionViewModel(
     private bool hasLoaded;
 
     [ObservableProperty]
-    public partial int DeckId { get; set; }
-
-    [ObservableProperty]
     public partial DeckDto? Deck { get; set; }
 
     [ObservableProperty]
@@ -77,10 +74,12 @@ public partial class StudySessionViewModel(
         {
             IsLoading = true;
 
-            Deck = await deckService.GetDeckByIdAsync(DeckId)
-                ?? throw new InvalidOperationException("Deck does not exist.");
+            if (Deck is null)
+            {
+                throw new InvalidOperationException("Deck was not provided.");
+            }
 
-            Cards = new ObservableCollection<CardDto>(await deckService.GetCardsForDeckAsync(DeckId));
+            Cards = new ObservableCollection<CardDto>(await deckService.GetCardsForDeckAsync(Deck.Id));
             TotalCards = Cards.Count;
 
             if (TotalCards == 0)
@@ -88,7 +87,7 @@ public partial class StudySessionViewModel(
                 throw new InvalidOperationException("This deck has no cards to study.");
             }
 
-            var session = await studySessionService.StartStudySessionAsync(DeckId);
+            var session = await studySessionService.StartStudySessionAsync(Deck.Id);
             sessionId = session.Id;
 
             CurrentCardIndex = 0;

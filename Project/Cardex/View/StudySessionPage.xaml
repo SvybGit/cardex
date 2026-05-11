@@ -1,4 +1,5 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8"?>
+
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
@@ -18,7 +19,7 @@
           RowSpacing="12">
         <VerticalStackLayout Grid.Row="0"
                              Spacing="8">
-            <Label Text="{Binding Deck.Name}"
+            <Label Text="{Binding Deck.Name, FallbackValue=''}"
                    FontAttributes="Bold" />
             <Label IsVisible="{Binding CanShowCurrentCard}">
                 <Label.FormattedText>
@@ -43,16 +44,18 @@
                     Command="{Binding FlipCardCommand}"
                     IsVisible="{Binding CanShowCurrentCard}" />
 
-            <HorizontalStackLayout Spacing="8"
-                                   HorizontalOptions="Center"
-                                   IsVisible="{Binding CanShowRatingButtons}">
-                <Button Text="Again"
-                        Command="{Binding RateAgainCommand}" />
-                <Button Text="Hard"
-                        Command="{Binding RateHardCommand}" />
-                <Button Text="Easy"
-                        Command="{Binding RateEasyCommand}" />
-            </HorizontalStackLayout>
+            <VerticalStackLayout IsVisible="{Binding CanShowRatingButtons}">
+                <Label HorizontalOptions="Center" Text="Rate card:" />
+                <HorizontalStackLayout Spacing="8"
+                                       HorizontalOptions="Center">
+                    <Button Text="Again"
+                            Command="{Binding RateAgainCommand}" />
+                    <Button Text="Hard"
+                            Command="{Binding RateHardCommand}" />
+                    <Button Text="Easy"
+                            Command="{Binding RateEasyCommand}" />
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
         </VerticalStackLayout>
 
         <VerticalStackLayout Grid.Row="2"
