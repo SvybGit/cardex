@@ -1,4 +1,3 @@
-using Cardex.Model.Dtos;
 using Cardex.Model.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -10,10 +9,7 @@ public partial class DeckListViewModel(
     DeckService deckService,
     INavigationService navigationService) : ObservableObject
 {
-    [ObservableProperty] public partial ObservableCollection<DeckDto> Decks { get; set; } = [];
-
-    [ObservableProperty]
-    public partial DeckDto? SelectedDeck { get; set; }
+    [ObservableProperty] public partial ObservableCollection<DeckItemViewModel> Decks { get; set; } = [];
 
     [ObservableProperty]
     public partial bool IsLoading { get; set; }
@@ -29,7 +25,16 @@ public partial class DeckListViewModel(
         try
         {
             IsLoading = true;
-            Decks = new ObservableCollection<DeckDto>(await deckService.GetAllDecksAsync());
+            var decks = await deckService.GetAllDecksAsync();
+            var deckItems = new List<DeckItemViewModel>();
+
+            foreach (var deck in decks)
+            {
+                var cards = await deckService.GetCardsForDeckAsync(deck.Id);
+                deckItems.Add(new DeckItemViewModel(deck, cards.Count));
+            }
+
+            Decks = new ObservableCollection<DeckItemViewModel>(deckItems);
         }
         finally
         {
@@ -41,8 +46,26 @@ public partial class DeckListViewModel(
     private Task CreateDeckAsync() => navigationService.GoToCreateDeckAsync();
 
     [RelayCommand]
+    private Task EditDeckAsync(DeckItemViewModel? deck) =>
+        deck is null
+            ? Task.CompletedTask
+            : navigationService.GoToEditDeckAsync(deck.Deck);
+
+    [RelayCommand]
     private Task StudyDeckAsync(DeckItemViewModel? deck) =>
         deck is null
             ? Task.CompletedTask
             : navigationService.GoToStudySessionAsync(deck.Deck);
+
+    [RelayCommand]
+    private async Task DeleteDeckAsync(DeckItemViewModel? deck)
+    {
+        if (deck is null)
+        {
+            return;
+        }
+
+        await deckService.DeleteDeckAsync(deck.Id);
+        Decks.Remove(deck);
+    }
 }

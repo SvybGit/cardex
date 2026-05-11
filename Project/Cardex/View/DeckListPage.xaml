@@ -1,7 +1,7 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8"?>
+
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:dto="clr-namespace:Cardex.Model.Dtos;assembly=Model"
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              xmlns:vm="clr-namespace:ViewModel;assembly=ViewModel"
              x:DataType="vm:DeckListViewModel"
@@ -15,22 +15,45 @@
     </ContentPage.Behaviors>
     <VerticalStackLayout Padding="16" Spacing="12">
         <Button Text="Create deck"
-                Clicked="CreateDeckButton_OnClicked" />
+                Command="{Binding CreateDeckCommand}" />
 
-        <CollectionView ItemsSource="{Binding Decks}"
-                        SelectedItem="{Binding SelectedDeck, Mode=TwoWay}"
-                        SelectionMode="Single">
+        <CollectionView ItemsSource="{Binding Decks}">
             <CollectionView.ItemTemplate>
-                <DataTemplate x:DataType="dto:DeckDto">
-                    <Grid ColumnDefinitions="*,Auto"
-                          Padding="0,4">
-                        <Label Grid.Column="0"
-                               Text="{Binding Name}"
-                               VerticalOptions="Center" />
-                        <Button Grid.Column="1"
-                                Text="Study"
-                                CommandParameter="{Binding Id}"
-                                Clicked="StudyButton_OnClicked" />
+                <DataTemplate x:DataType="vm:DeckItemViewModel">
+                    <Grid x:Name="DeckItem"
+                          Padding="0,8"
+                          RowDefinitions="Auto,Auto"
+                          RowSpacing="2">
+                        <FlyoutBase.ContextFlyout>
+                            <MenuFlyout>
+                                <MenuFlyoutItem Text="Study"
+                                                Command="{Binding BindingContext.StudyDeckCommand, Source={x:Reference DecksPage}}"
+                                                CommandParameter="{Binding .}" />
+                                <MenuFlyoutItem Text="Edit"
+                                                Command="{Binding BindingContext.EditDeckCommand, Source={x:Reference DecksPage}}"
+                                                CommandParameter="{Binding .}" />
+                                <MenuFlyoutItem Text="Delete"
+                                                Command="{Binding BindingContext.DeleteDeckCommand, Source={x:Reference DecksPage}}"
+                                                CommandParameter="{Binding .}" />
+                            </MenuFlyout>
+                        </FlyoutBase.ContextFlyout>
+                        <Grid.GestureRecognizers>
+                            <TapGestureRecognizer
+                                Command="{Binding BindingContext.StudyDeckCommand, Source={x:Reference DecksPage}}"
+                                CommandParameter="{Binding .}" />
+                        </Grid.GestureRecognizers>
+                        <Label Grid.Row="0"
+                               Text="{Binding Name}" />
+                        <HorizontalStackLayout Grid.Row="1"
+                                               Spacing="6">
+                            <Label Text="{Binding CardCount, StringFormat='{0} cards'}"
+                                   FontSize="12"
+                                   TextColor="{StaticResource Gray600}" />
+                            <Label Text="{Binding CategoryName, StringFormat='| {0}'}"
+                                   IsVisible="{Binding HasCategory}"
+                                   FontSize="12"
+                                   TextColor="{StaticResource Gray600}" />
+                        </HorizontalStackLayout>
                     </Grid>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
