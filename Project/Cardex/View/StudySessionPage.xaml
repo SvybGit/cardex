@@ -9,60 +9,134 @@
              x:Name="StudySession"
              Title="Study">
 
+    <ContentPage.Resources>
+        <Style x:Key="RatingButtonStyle" TargetType="Button">
+            <Setter Property="TextColor" Value="{StaticResource White}" />
+            <Setter Property="FontAttributes" Value="Bold" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="12,12" />
+        </Style>
+    </ContentPage.Resources>
+
     <ContentPage.Behaviors>
         <toolkit:EventToCommandBehavior EventName="Appearing"
                                         Command="{Binding BindingContext.LoadSessionCommand, Source={x:Reference StudySession}}" />
     </ContentPage.Behaviors>
 
-    <Grid Padding="16"
+    <Grid Padding="18"
           RowDefinitions="Auto,*,Auto"
-          RowSpacing="12">
+          RowSpacing="18">
         <VerticalStackLayout Grid.Row="0"
-                             Spacing="8">
-            <Label Text="{Binding Deck.Name, FallbackValue=''}"
-                   FontAttributes="Bold" />
-            <Label IsVisible="{Binding CanShowCurrentCard}">
-                <Label.FormattedText>
-                    <FormattedString>
-                        <Span Text="Card " />
-                        <Span Text="{Binding CurrentCardNumber}" />
-                        <Span Text=" / " />
-                        <Span Text="{Binding TotalCards}" />
-                    </FormattedString>
-                </Label.FormattedText>
-            </Label>
+                             Spacing="10"
+                             IsVisible="{Binding CanShowCurrentCard}">
+            <Grid ColumnDefinitions="*,Auto"
+                  ColumnSpacing="12">
+                <Label Grid.Column="0"
+                       Text="{Binding Deck.Name, FallbackValue=''}"
+                       FontAttributes="Bold"
+                       FontSize="20"
+                       LineBreakMode="TailTruncation" />
+                <Label Grid.Column="1"
+                       VerticalTextAlignment="Center"
+                       FontSize="13"
+                       TextColor="{AppThemeBinding Light={StaticResource Gray500}, Dark={StaticResource Gray200}}">
+                    <Label.FormattedText>
+                        <FormattedString>
+                            <Span Text="Card " />
+                            <Span Text="{Binding CurrentCardNumber}" />
+                            <Span Text=" / " />
+                            <Span Text="{Binding TotalCards}" />
+                        </FormattedString>
+                    </Label.FormattedText>
+                </Label>
+            </Grid>
+
+            <ProgressBar Progress="{Binding StudyProgress}"
+                         HeightRequest="6"
+                         ProgressColor="{StaticResource Primary}" />
         </VerticalStackLayout>
 
         <VerticalStackLayout Grid.Row="1"
-                             Spacing="12"
+                             Spacing="18"
                              VerticalOptions="Center"
                              IsVisible="{Binding CanShowCurrentCard}">
-            <Label Text="{Binding DisplayedCardText}"
-                   HorizontalTextAlignment="Center" />
+            <Border Padding="22"
+                    MinimumHeightRequest="260"
+                    BackgroundColor="{StaticResource Gray950}"
+                    Stroke="{StaticResource Gray600}"
+                    StrokeShape="RoundRectangle 8">
+                <Grid RowDefinitions="Auto,*"
+                      RowSpacing="18">
+                    <Label Grid.Row="0"
+                           Text="{Binding CardSideLabel}"
+                           FontAttributes="Bold"
+                           FontSize="12"
+                           TextColor="{StaticResource PrimaryDark}"
+                           HorizontalTextAlignment="Center" />
+
+                    <ScrollView Grid.Row="1">
+                        <Label Text="{Binding DisplayedCardText}"
+                               FontSize="24"
+                               TextColor="{StaticResource White}"
+                               HorizontalTextAlignment="Center"
+                               VerticalTextAlignment="Center" />
+                    </ScrollView>
+                </Grid>
+            </Border>
 
             <Button Text="Flip"
                     Command="{Binding FlipCardCommand}"
-                    IsVisible="{Binding CanShowCurrentCard}" />
+                    FontAttributes="Bold" />
 
-            <VerticalStackLayout IsVisible="{Binding CanShowRatingButtons}">
-                <Label HorizontalOptions="Center" Text="Rate card:" />
-                <HorizontalStackLayout Spacing="8"
-                                       HorizontalOptions="Center">
-                    <Button Text="Again"
-                            Command="{Binding RateAgainCommand}" />
-                    <Button Text="Hard"
-                            Command="{Binding RateHardCommand}" />
-                    <Button Text="Easy"
-                            Command="{Binding RateEasyCommand}" />
-                </HorizontalStackLayout>
+            <VerticalStackLayout Spacing="8"
+                                 IsVisible="{Binding CanShowRatingButtons}">
+                <Label HorizontalOptions="Center"
+                       Text="Rate card"
+                       FontSize="13"
+                       TextColor="{AppThemeBinding Light={StaticResource Gray500}, Dark={StaticResource Gray200}}" />
+                <Grid ColumnDefinitions="*,*,*"
+                      ColumnSpacing="8">
+                    <Button Grid.Column="0"
+                            Text="Again"
+                            Command="{Binding RateAgainCommand}"
+                            BackgroundColor="DarkRed"
+                            Style="{StaticResource RatingButtonStyle}" />
+                    <Button Grid.Column="1"
+                            Text="Hard"
+                            Command="{Binding RateHardCommand}"
+                            BackgroundColor="BlueViolet"
+                            Style="{StaticResource RatingButtonStyle}" />
+                    <Button Grid.Column="2"
+                            Text="Easy"
+                            Command="{Binding RateEasyCommand}"
+                            BackgroundColor="Green"
+                            Style="{StaticResource RatingButtonStyle}" />
+                </Grid>
             </VerticalStackLayout>
         </VerticalStackLayout>
 
-        <VerticalStackLayout Grid.Row="2"
-                             Spacing="12"
+        <VerticalStackLayout Grid.Row="1"
+                             Spacing="16"
+                             VerticalOptions="Center"
                              IsVisible="{Binding IsComplete}">
-            <Label Text="Session complete" />
+            <Border Padding="24"
+                    BackgroundColor="{StaticResource Gray950}"
+                    Stroke="{StaticResource Gray600}"
+                    StrokeShape="RoundRectangle 8">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Session complete"
+                           FontAttributes="Bold"
+                           FontSize="24"
+                           TextColor="{StaticResource White}"
+                           HorizontalTextAlignment="Center" />
+                    <Label Text="{Binding ReviewedCardsText}"
+                           TextColor="{StaticResource Gray200}"
+                           HorizontalTextAlignment="Center" />
+                </VerticalStackLayout>
+            </Border>
+
             <Button Text="End session"
+                    FontAttributes="Bold"
                     Command="{Binding EndSessionCommand}" />
         </VerticalStackLayout>
     </Grid>

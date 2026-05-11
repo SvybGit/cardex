@@ -30,12 +30,14 @@ public partial class StudySessionViewModel(
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CurrentCardNumber))]
+    [NotifyPropertyChangedFor(nameof(StudyProgress))]
     public partial int CurrentCardIndex { get; set; }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CanShowCurrentCard))]
     [NotifyPropertyChangedFor(nameof(CanShowRatingButtons))]
     [NotifyPropertyChangedFor(nameof(DisplayedCardText))]
+    [NotifyPropertyChangedFor(nameof(CardSideLabel))]
     public partial bool IsAnswerVisible { get; set; }
 
     [ObservableProperty]
@@ -51,13 +53,25 @@ public partial class StudySessionViewModel(
     public partial bool IsBusy { get; set; }
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(StudyProgress))]
+    [NotifyPropertyChangedFor(nameof(ReviewedCardsText))]
     public partial int TotalCards { get; set; }
 
     public int CurrentCardNumber => CurrentCardIndex + 1;
 
+    public double StudyProgress => TotalCards == 0
+        ? 0
+        : (double)CurrentCardNumber / TotalCards;
+
     public bool CanShowCurrentCard => CurrentCard is not null && !IsComplete;
 
     public bool CanShowRatingButtons => CanRateCurrentCard();
+
+    public string CardSideLabel => IsAnswerVisible ? "Answer" : "Question";
+
+    public string ReviewedCardsText => TotalCards == 1
+        ? "You reviewed 1 card."
+        : $"You reviewed {TotalCards} cards.";
 
     public string DisplayedCardText => CurrentCard is null
         ? string.Empty
