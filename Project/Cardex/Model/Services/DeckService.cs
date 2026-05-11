@@ -83,6 +83,14 @@ public class DeckService(CardexDbContext dbContext)
             .ToListAsync();
     }
 
+    public async Task<List<CardDto>> GetAllCardsAsync()
+    {
+        return await dbContext.Cards
+            .AsNoTracking()
+            .Select(card => CardMapper.ToDto(card))
+            .ToListAsync();
+    }
+
     public async Task<CardDto?> GetCardByIdAsync(int id)
     {
         var card = await dbContext.Cards

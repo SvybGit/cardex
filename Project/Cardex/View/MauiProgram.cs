@@ -2,7 +2,6 @@ using Cardex.DAL;
 using Cardex.Model.Services;
 using CommunityToolkit.Maui;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ViewModel;
 
@@ -34,6 +33,7 @@ public static class MauiProgram
         builder.Services.AddTransient<DeckService>();
         builder.Services.AddTransient<CategoryService>();
         builder.Services.AddTransient<StudySessionService>();
+        builder.Services.AddTransient<ImportExportService>();
         builder.Services.AddTransient<INavigationService, ShellNavigationService>();
 
         // ViewModels

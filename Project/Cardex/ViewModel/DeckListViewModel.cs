@@ -7,6 +7,7 @@ namespace ViewModel;
 
 public partial class DeckListViewModel(
     DeckService deckService,
+    ImportExportService importExportService,
     INavigationService navigationService) : ObservableObject
 {
     [ObservableProperty] public partial ObservableCollection<DeckItemViewModel> Decks { get; set; } = [];
@@ -44,6 +45,15 @@ public partial class DeckListViewModel(
 
     [RelayCommand]
     private Task CreateDeckAsync() => navigationService.GoToCreateDeckAsync();
+
+    public Task<string> ExportAsync() => importExportService.ExportAsync();
+
+    [RelayCommand]
+    private async Task ImportAsync(string path)
+    {
+        await importExportService.ImportAsync(path);
+        await LoadDecksAsync();
+    }
 
     [RelayCommand]
     private Task EditDeckAsync(DeckItemViewModel? deck) =>

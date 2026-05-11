@@ -13,6 +13,12 @@
         <toolkit:EventToCommandBehavior EventName="Appearing"
                                         Command="{Binding BindingContext.LoadDecksCommand, Source={x:Reference DecksPage}}" />
     </ContentPage.Behaviors>
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Export"
+                     Clicked="ExportClicked" />
+        <ToolbarItem Text="Import"
+                     Clicked="ImportClicked" />
+    </ContentPage.ToolbarItems>
     <VerticalStackLayout Padding="16" Spacing="12">
         <Button Text="Create deck"
                 Command="{Binding CreateDeckCommand}" />
