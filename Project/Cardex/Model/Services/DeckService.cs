@@ -9,16 +9,19 @@ public class DeckService(CardexDbContext dbContext)
 {
     public async Task<List<DeckDto>> GetAllDecksAsync()
     {
-        return await dbContext.Decks
+        var decks = await dbContext.Decks
             .AsNoTracking()
-            .Select(deck => DeckMapper.ToDto(deck))
+            .Include(deck => deck.Category)
             .ToListAsync();
+
+        return [.. decks.Select(DeckMapper.ToDto)];
     }
 
     public async Task<DeckDto?> GetDeckByIdAsync(int id)
     {
         var deck = await dbContext.Decks
             .AsNoTracking()
+            .Include(deck => deck.Category)
             .FirstOrDefaultAsync(deck => deck.Id == id);
 
         return deck is null ? null : DeckMapper.ToDto(deck);
@@ -26,7 +29,8 @@ public class DeckService(CardexDbContext dbContext)
 
     public async Task<DeckDto> CreateDeckAsync(DeckDto deck)
     {
-        if (deck.CategoryId.HasValue && !await dbContext.Categories.AnyAsync(category => category.Id == deck.CategoryId.Value))
+        var categoryId = deck.Category?.Id;
+        if (categoryId.HasValue && !await dbContext.Categories.AnyAsync(category => category.Id == categoryId.Value))
         {
             throw new ArgumentException("Category does not exist.", nameof(deck));
         }
@@ -43,19 +47,16 @@ public class DeckService(CardexDbContext dbContext)
 
     public async Task<DeckDto> UpdateDeckAsync(DeckDto deck)
     {
-        var entity = await dbContext.Decks.FindAsync(deck.Id);
-        if (entity is null)
-        {
-            throw new InvalidOperationException("Deck does not exist.");
-        }
+        var categoryId = deck.Category?.Id;
+        var entity = await dbContext.Decks.FindAsync(deck.Id) ?? throw new InvalidOperationException("Deck does not exist.");
 
-        if (deck.CategoryId.HasValue && !await dbContext.Categories.AnyAsync(category => category.Id == deck.CategoryId.Value))
+        if (categoryId.HasValue && !await dbContext.Categories.AnyAsync(category => category.Id == categoryId.Value))
         {
             throw new ArgumentException("Category does not exist.", nameof(deck));
         }
 
         entity.Name = deck.Name;
-        entity.CategoryId = deck.CategoryId;
+        entity.CategoryId = categoryId;
         entity.CreatedAt = deck.CreatedAt == default ? entity.CreatedAt : deck.CreatedAt;
 
         await dbContext.SaveChangesAsync();
@@ -111,11 +112,7 @@ public class DeckService(CardexDbContext dbContext)
 
     public async Task<CardDto> UpdateCardAsync(CardDto card)
     {
-        var entity = await dbContext.Cards.FindAsync(card.Id);
-        if (entity is null)
-        {
-            throw new InvalidOperationException("Card does not exist.");
-        }
+        var entity = await dbContext.Cards.FindAsync(card.Id) ?? throw new InvalidOperationException("Card does not exist.");
 
         if (!await dbContext.Decks.AnyAsync(deck => deck.Id == card.DeckId))
         {

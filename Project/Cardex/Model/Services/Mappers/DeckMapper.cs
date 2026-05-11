@@ -11,7 +11,7 @@ public static class DeckMapper
         {
             Id = database.Id,
             Name = database.Name,
-            CategoryId = database.CategoryId,
+            Category = database.Category is null ? null : CategoryMapper.ToDto(database.Category),
             CreatedAt = database.CreatedAt
         };
     }
@@ -22,7 +22,7 @@ public static class DeckMapper
         {
             Id = dto.Id,
             Name = dto.Name,
-            CategoryId = dto.CategoryId,
+            CategoryId = dto.Category?.Id,
             CreatedAt = dto.CreatedAt
         };
     }

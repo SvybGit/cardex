@@ -89,7 +89,7 @@ public partial class CreateDeckViewModel(
                 EmptyCategory,
                 .. await categoryService.GetAllCategoriesAsync()
             ];
-            SelectCategory(deck.CategoryId);
+            SelectCategory(deck.Category?.Id);
             await LoadDeckCardsAsync();
         }
         finally
@@ -132,7 +132,7 @@ public partial class CreateDeckViewModel(
             ErrorMessage = string.Empty;
 
             deck.Name = Name.Trim();
-            deck.CategoryId = SelectedCategory == EmptyCategory ? null : SelectedCategory?.Id;
+            deck.Category = SelectedCategory == EmptyCategory ? null : SelectedCategory;
 
             deck = deck.Id == 0
                 ? await deckService.CreateDeckAsync(deck)
