@@ -38,10 +38,12 @@ public static class MauiProgram
         // ViewModels
         builder.Services.AddTransient<DeckListViewModel>();
         builder.Services.AddTransient<CreateDeckViewModel>();
+        builder.Services.AddTransient<StudySessionViewModel>();
 
         // Views
         builder.Services.AddTransient<DeckListPage>();
         builder.Services.AddTransient<CreateDeckPage>();
+        builder.Services.AddTransient<StudySessionPage>();
 
         var app = builder.Build();
         return app;

@@ -1,0 +1,181 @@
+using Cardex.DAL.Enums;
+using Cardex.Model.Dtos;
+using Cardex.Model.Services;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using System.Collections.ObjectModel;
+
+namespace ViewModel;
+
+public partial class StudySessionViewModel(
+    DeckService deckService,
+    StudySessionService studySessionService) : ObservableObject
+{
+    private int? sessionId;
+    private bool hasLoaded;
+
+    [ObservableProperty]
+    public partial int DeckId { get; set; }
+
+    [ObservableProperty]
+    public partial DeckDto? Deck { get; set; }
+
+    [ObservableProperty]
+    public partial ObservableCollection<CardDto> Cards { get; set; } = [];
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CurrentCardNumber))]
+    [NotifyPropertyChangedFor(nameof(CanShowCurrentCard))]
+    [NotifyPropertyChangedFor(nameof(CanShowRatingButtons))]
+    [NotifyPropertyChangedFor(nameof(DisplayedCardText))]
+    public partial CardDto? CurrentCard { get; set; }
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CurrentCardNumber))]
+    public partial int CurrentCardIndex { get; set; }
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanShowCurrentCard))]
+    [NotifyPropertyChangedFor(nameof(CanShowRatingButtons))]
+    [NotifyPropertyChangedFor(nameof(DisplayedCardText))]
+    public partial bool IsAnswerVisible { get; set; }
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanShowCurrentCard))]
+    [NotifyPropertyChangedFor(nameof(CanShowRatingButtons))]
+    public partial bool IsComplete { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsLoading { get; set; }
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanShowRatingButtons))]
+    public partial bool IsBusy { get; set; }
+
+    [ObservableProperty]
+    public partial int TotalCards { get; set; }
+
+    public int CurrentCardNumber => CurrentCardIndex + 1;
+
+    public bool CanShowCurrentCard => CurrentCard is not null && !IsComplete;
+
+    public bool CanShowRatingButtons => CanRateCurrentCard();
+
+    public string DisplayedCardText => CurrentCard is null
+        ? string.Empty
+        : IsAnswerVisible ? CurrentCard.Back : CurrentCard.Front;
+
+    [RelayCommand]
+    private async Task LoadSessionAsync()
+    {
+        if (IsLoading || hasLoaded)
+        {
+            return;
+        }
+
+        try
+        {
+            IsLoading = true;
+
+            Deck = await deckService.GetDeckByIdAsync(DeckId)
+                ?? throw new InvalidOperationException("Deck does not exist.");
+
+            Cards = new ObservableCollection<CardDto>(await deckService.GetCardsForDeckAsync(DeckId));
+            TotalCards = Cards.Count;
+
+            if (TotalCards == 0)
+            {
+                throw new InvalidOperationException("This deck has no cards to study.");
+            }
+
+            var session = await studySessionService.StartStudySessionAsync(DeckId);
+            sessionId = session.Id;
+
+            CurrentCardIndex = 0;
+            CurrentCard = Cards[CurrentCardIndex];
+            IsAnswerVisible = false;
+            IsComplete = false;
+            hasLoaded = true;
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    [RelayCommand]
+    private void FlipCard()
+    {
+        if (!CanShowCurrentCard)
+        {
+            return;
+        }
+
+        IsAnswerVisible = !IsAnswerVisible;
+    }
+
+    [RelayCommand]
+    private Task RateAgainAsync() => RateCurrentCardAsync(CardRating.Again);
+
+    [RelayCommand]
+    private Task RateHardAsync() => RateCurrentCardAsync(CardRating.Hard);
+
+    [RelayCommand]
+    private Task RateEasyAsync() => RateCurrentCardAsync(CardRating.Easy);
+
+    [RelayCommand]
+    private async Task EndSessionAsync()
+    {
+        if (sessionId is null || IsBusy)
+        {
+            return;
+        }
+
+        try
+        {
+            IsBusy = true;
+            await studySessionService.FinishStudySessionAsync(sessionId.Value);
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private async Task RateCurrentCardAsync(CardRating rating)
+    {
+        if (!CanRateCurrentCard())
+        {
+            return;
+        }
+
+        try
+        {
+            IsBusy = true;
+            await studySessionService.RecordCardResultAsync(sessionId!.Value, CurrentCard!.Id, rating);
+
+            IsAnswerVisible = false;
+
+            if (CurrentCardIndex + 1 < TotalCards)
+            {
+                CurrentCardIndex++;
+                CurrentCard = Cards[CurrentCardIndex];
+                return;
+            }
+
+            CurrentCard = null;
+            IsComplete = true;
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private bool CanRateCurrentCard() =>
+        IsAnswerVisible
+        && !IsBusy
+        && sessionId is not null
+        && CurrentCard is not null
+        && !IsComplete;
+}

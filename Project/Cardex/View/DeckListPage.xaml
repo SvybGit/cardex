@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:dto="clr-namespace:Cardex.Model.Dtos;assembly=Model"
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              xmlns:vm="clr-namespace:ViewModel;assembly=ViewModel"
              x:DataType="vm:DeckListViewModel"
@@ -20,8 +21,17 @@
                         SelectedItem="{Binding SelectedDeck, Mode=TwoWay}"
                         SelectionMode="Single">
             <CollectionView.ItemTemplate>
-                <DataTemplate x:DataType="{x:Null}">
-                    <Label Text="{Binding Name}" />
+                <DataTemplate x:DataType="dto:DeckDto">
+                    <Grid ColumnDefinitions="*,Auto"
+                          Padding="0,4">
+                        <Label Grid.Column="0"
+                               Text="{Binding Name}"
+                               VerticalOptions="Center" />
+                        <Button Grid.Column="1"
+                                Text="Study"
+                                CommandParameter="{Binding Id}"
+                                Clicked="StudyButton_OnClicked" />
+                    </Grid>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>
