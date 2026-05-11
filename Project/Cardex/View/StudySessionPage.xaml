@@ -63,8 +63,7 @@
                              IsVisible="{Binding IsComplete}">
             <Label Text="Session complete" />
             <Button Text="End session"
-                    Command="{Binding EndSessionCommand}"
-                    Clicked="GoBack" />
+                    Command="{Binding EndSessionCommand}" />
         </VerticalStackLayout>
     </Grid>
 </ContentPage>

@@ -19,9 +19,4 @@ public partial class CreateDeckPage : ContentPage
         this.viewModel = viewModel;
         BindingContext = viewModel;
     }
-
-    public async void GoBack(object? sender, EventArgs e)
-    {
-        await Shell.Current.GoToAsync("..");
-    }
 }

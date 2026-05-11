@@ -8,7 +8,8 @@ namespace ViewModel;
 
 public partial class CreateDeckViewModel(
     DeckService deckService,
-    CategoryService categoryService) : ObservableObject
+    CategoryService categoryService,
+    INavigationService navigationService) : ObservableObject
 {
     private static readonly CategoryDto EmptyCategory = new()
     {
@@ -161,6 +162,7 @@ public partial class CreateDeckViewModel(
             }
 
             ResetForm();
+            await navigationService.GoBackAsync();
         }
         catch (Exception exception)
         {
@@ -171,6 +173,9 @@ public partial class CreateDeckViewModel(
             IsSaving = false;
         }
     }
+
+    [RelayCommand]
+    private Task CancelAsync() => navigationService.GoBackAsync();
 
     private bool CanSaveDeck() =>
         !IsSaving

@@ -6,7 +6,9 @@ using System.Collections.ObjectModel;
 
 namespace ViewModel;
 
-public partial class DeckListViewModel(DeckService deckService) : ObservableObject
+public partial class DeckListViewModel(
+    DeckService deckService,
+    INavigationService navigationService) : ObservableObject
 {
     [ObservableProperty] public partial ObservableCollection<DeckDto> Decks { get; set; } = [];
 
@@ -34,4 +36,13 @@ public partial class DeckListViewModel(DeckService deckService) : ObservableObje
             IsLoading = false;
         }
     }
+
+    [RelayCommand]
+    private Task CreateDeckAsync() => navigationService.GoToCreateDeckAsync();
+
+    [RelayCommand]
+    private Task StudyDeckAsync(DeckItemViewModel? deck) =>
+        deck is null
+            ? Task.CompletedTask
+            : navigationService.GoToStudySessionAsync(deck.Deck);
 }

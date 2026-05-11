@@ -34,6 +34,7 @@ public static class MauiProgram
         builder.Services.AddTransient<DeckService>();
         builder.Services.AddTransient<CategoryService>();
         builder.Services.AddTransient<StudySessionService>();
+        builder.Services.AddTransient<INavigationService, ShellNavigationService>();
 
         // ViewModels
         builder.Services.AddTransient<DeckListViewModel>();

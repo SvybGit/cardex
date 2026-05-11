@@ -19,9 +19,4 @@ public partial class StudySessionPage : ContentPage
         BindingContext = viewModel;
         this.viewModel = viewModel;
     }
-
-    public async void GoBack(object? sender, EventArgs e)
-    {
-        await Shell.Current.GoToAsync("..");
-    }
 }

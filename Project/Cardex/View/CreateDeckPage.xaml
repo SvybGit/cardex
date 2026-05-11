@@ -71,10 +71,9 @@
                              Spacing="12">
             <HorizontalStackLayout Spacing="8">
                 <Button Text="Save"
-                        Command="{Binding SaveDeckCommand}"
-                        Clicked="GoBack" />
+                        Command="{Binding SaveDeckCommand}" />
                 <Button Text="Cancel"
-                        Clicked="GoBack" />
+                        Command="{Binding CancelCommand}" />
             </HorizontalStackLayout>
 
             <Label Text="{Binding ErrorMessage}"

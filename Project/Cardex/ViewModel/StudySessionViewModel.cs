@@ -9,7 +9,8 @@ namespace ViewModel;
 
 public partial class StudySessionViewModel(
     DeckService deckService,
-    StudySessionService studySessionService) : ObservableObject
+    StudySessionService studySessionService,
+    INavigationService navigationService) : ObservableObject
 {
     private int? sessionId;
     private bool hasLoaded;
@@ -134,6 +135,7 @@ public partial class StudySessionViewModel(
         {
             IsBusy = true;
             await studySessionService.FinishStudySessionAsync(sessionId.Value);
+            await navigationService.GoBackAsync();
         }
         finally
         {
