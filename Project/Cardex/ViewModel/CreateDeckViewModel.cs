@@ -19,6 +19,20 @@ public partial class CreateDeckViewModel(
     [ObservableProperty]
     public partial List<CategoryDto> Categories { get; set; } = [];
 
+    public DeckDto Deck
+    {
+        get => deck;
+        set
+        {
+            deck = value;
+            PageTitle = "Edit deck";
+            Name = deck.Name;
+        }
+    }
+
+    [ObservableProperty]
+    public partial string PageTitle { get; set; } = "Create deck";
+
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(SaveDeckCommand))]
     public partial string Name { get; set; } = string.Empty;
@@ -51,6 +65,10 @@ public partial class CreateDeckViewModel(
     [NotifyPropertyChangedFor(nameof(HasError))]
     public partial string ErrorMessage { get; set; } = string.Empty;
 
+    private readonly HashSet<int> originalCardIds = [];
+    private DeckDto deck = new();
+    private bool hasLoadedDeckCards;
+
     public bool HasError => !string.IsNullOrWhiteSpace(ErrorMessage);
 
     [RelayCommand]
@@ -71,7 +89,8 @@ public partial class CreateDeckViewModel(
                 EmptyCategory,
                 .. await categoryService.GetAllCategoriesAsync()
             ];
-            SelectedCategory = EmptyCategory;
+            SelectCategory(deck.CategoryId);
+            await LoadDeckCardsAsync();
         }
         finally
         {
@@ -84,6 +103,7 @@ public partial class CreateDeckViewModel(
     {
         CardsToCreate.Add(new CardDto
         {
+            DeckId = deck.Id,
             Front = CurrentCardFront.Trim(),
             Back = CurrentCardBack.Trim()
         });
@@ -111,26 +131,36 @@ public partial class CreateDeckViewModel(
             IsSaving = true;
             ErrorMessage = string.Empty;
 
-            var deck = await deckService.CreateDeckAsync(new DeckDto
-            {
-                Name = Name.Trim(),
-                CategoryId = SelectedCategory == EmptyCategory ? null : SelectedCategory?.Id
-            });
+            deck.Name = Name.Trim();
+            deck.CategoryId = SelectedCategory == EmptyCategory ? null : SelectedCategory?.Id;
+
+            deck = deck.Id == 0
+                ? await deckService.CreateDeckAsync(deck)
+                : await deckService.UpdateDeckAsync(deck);
 
             foreach (var card in CardsToCreate)
             {
-                await deckService.CreateCardInDeckAsync(deck.Id, new CardDto
+                if (card.Id == 0)
                 {
-                    Front = card.Front,
-                    Back = card.Back
-                });
+                    card.DeckId = deck.Id;
+                    await deckService.CreateCardInDeckAsync(deck.Id, card);
+                }
+                else
+                {
+                    await deckService.UpdateCardAsync(card);
+                }
             }
 
-            Name = string.Empty;
-            SelectedCategory = EmptyCategory;
-            CardsToCreate.Clear();
-            CurrentCardFront = string.Empty;
-            CurrentCardBack = string.Empty;
+            var remainingCardIds = CardsToCreate
+                .Where(card => card.Id != 0)
+                .Select(card => card.Id);
+
+            foreach (var removedCardId in originalCardIds.Except(remainingCardIds).ToList())
+            {
+                await deckService.DeleteCardAsync(removedCardId);
+            }
+
+            ResetForm();
         }
         catch (Exception exception)
         {
@@ -154,4 +184,43 @@ public partial class CreateDeckViewModel(
     private bool CanRemoveCard(CardDto? card) =>
         !IsSaving
         && card is not null;
+
+    private void SelectCategory(int? categoryId)
+    {
+        SelectedCategory = categoryId.HasValue
+            ? Categories.FirstOrDefault(category => category.Id == categoryId.Value) ?? EmptyCategory
+            : EmptyCategory;
+    }
+
+    private async Task LoadDeckCardsAsync()
+    {
+        if (deck.Id == 0 || hasLoadedDeckCards)
+        {
+            return;
+        }
+
+        var cards = await deckService.GetCardsForDeckAsync(deck.Id);
+        CardsToCreate = new ObservableCollection<CardDto>(cards);
+        originalCardIds.Clear();
+
+        foreach (var card in cards)
+        {
+            originalCardIds.Add(card.Id);
+        }
+
+        hasLoadedDeckCards = true;
+    }
+
+    private void ResetForm()
+    {
+        deck = new DeckDto();
+        hasLoadedDeckCards = false;
+        originalCardIds.Clear();
+        PageTitle = "Create deck";
+        Name = string.Empty;
+        SelectedCategory = EmptyCategory;
+        CardsToCreate.Clear();
+        CurrentCardFront = string.Empty;
+        CurrentCardBack = string.Empty;
+    }
 }

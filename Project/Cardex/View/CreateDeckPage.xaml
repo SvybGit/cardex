@@ -8,7 +8,7 @@
              x:DataType="vm:CreateDeckViewModel"
              x:Class="View.CreateDeckPage"
              x:Name="CreateDeck"
-             Title="Create deck">
+             Title="{Binding PageTitle}">
 
     <ContentPage.Resources>
         <converters:CategoryNameConverter x:Key="CategoryNameConverter" />
