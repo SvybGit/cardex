@@ -26,10 +26,27 @@
         <CollectionView ItemsSource="{Binding Decks}">
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="vm:DeckItemViewModel">
-                    <Grid x:Name="DeckItem"
-                          Padding="0,8"
-                          RowDefinitions="Auto,Auto"
-                          RowSpacing="2">
+                    <Border x:Name="DeckItem"
+                            Margin="0,6"
+                            Padding="14,12"
+                            BackgroundColor="{StaticResource Gray950}"
+                            Stroke="{StaticResource Gray600}"
+                            StrokeShape="RoundRectangle 8">
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroupList>
+                                <VisualStateGroup x:Name="CommonStates">
+                                    <VisualState x:Name="Normal" />
+                                    <VisualState x:Name="PointerOver">
+                                        <VisualState.Setters>
+                                            <Setter Property="BackgroundColor"
+                                                    Value="{StaticResource Gray900}" />
+                                            <Setter Property="Stroke"
+                                                    Value="{StaticResource PrimaryDark}" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                </VisualStateGroup>
+                            </VisualStateGroupList>
+                        </VisualStateManager.VisualStateGroups>
                         <FlyoutBase.ContextFlyout>
                             <MenuFlyout>
                                 <MenuFlyoutItem Text="Study"
@@ -43,24 +60,29 @@
                                                 CommandParameter="{Binding .}" />
                             </MenuFlyout>
                         </FlyoutBase.ContextFlyout>
-                        <Grid.GestureRecognizers>
+                        <Border.GestureRecognizers>
                             <TapGestureRecognizer
                                 Command="{Binding BindingContext.StudyDeckCommand, Source={x:Reference DecksPage}}"
                                 CommandParameter="{Binding .}" />
-                        </Grid.GestureRecognizers>
-                        <Label Grid.Row="0"
-                               Text="{Binding Name}" />
-                        <HorizontalStackLayout Grid.Row="1"
-                                               Spacing="6">
-                            <Label Text="{Binding CardCount, StringFormat='{0} cards'}"
-                                   FontSize="12"
-                                   TextColor="{StaticResource Gray600}" />
-                            <Label Text="{Binding CategoryName, StringFormat='| {0}'}"
-                                   IsVisible="{Binding HasCategory}"
-                                   FontSize="12"
-                                   TextColor="{StaticResource Gray600}" />
-                        </HorizontalStackLayout>
-                    </Grid>
+                        </Border.GestureRecognizers>
+                        <Grid RowDefinitions="Auto,Auto"
+                              RowSpacing="4">
+                            <Label Grid.Row="0"
+                                   Text="{Binding Name}"
+                                   FontAttributes="Bold"
+                                   FontSize="16" />
+                            <HorizontalStackLayout Grid.Row="1"
+                                                   Spacing="6">
+                                <Label Text="{Binding CardCount, StringFormat='{0} cards'}"
+                                       FontSize="12"
+                                       TextColor="{StaticResource Gray500}" />
+                                <Label Text="{Binding CategoryName, StringFormat='| {0}'}"
+                                       IsVisible="{Binding HasCategory}"
+                                       FontSize="12"
+                                       TextColor="{StaticResource Gray500}" />
+                            </HorizontalStackLayout>
+                        </Grid>
+                    </Border>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>
