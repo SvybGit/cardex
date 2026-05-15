@@ -1,4 +1,5 @@
 using Cardex.Model.Services;
+using Cardex.Model.Dtos;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
@@ -7,11 +8,22 @@ namespace ViewModel;
 
 public partial class DeckListViewModel(
     DeckService deckService,
+    CategoryService categoryService,
     StudySessionService studySessionService,
     ImportExportService importExportService,
     INavigationService navigationService) : ObservableObject
 {
     [ObservableProperty] public partial ObservableCollection<DeckItemViewModel> Decks { get; set; } = [];
+
+    [ObservableProperty]
+    public partial ObservableCollection<CategoryDto> Categories { get; set; } = [];
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(CreateCategoryCommand))]
+    public partial string NewCategoryName { get; set; } = string.Empty;
+
+    [ObservableProperty]
+    public partial bool IsManagingCategories { get; set; }
 
     [ObservableProperty]
     public partial bool IsLoading { get; set; }
@@ -28,6 +40,7 @@ public partial class DeckListViewModel(
         {
             IsLoading = true;
             var decks = await deckService.GetAllDecksAsync();
+            var categories = await categoryService.GetAllCategoriesAsync();
             var activeSessionDeckIds = await studySessionService.GetDeckIdsWithActiveSessionsAsync();
             var deckItems = new List<DeckItemViewModel>();
 
@@ -38,6 +51,7 @@ public partial class DeckListViewModel(
             }
 
             Decks = new ObservableCollection<DeckItemViewModel>(deckItems);
+            Categories = new ObservableCollection<CategoryDto>(categories);
         }
         finally
         {
@@ -47,6 +61,30 @@ public partial class DeckListViewModel(
 
     [RelayCommand]
     private Task CreateDeckAsync() => navigationService.GoToCreateDeckAsync();
+
+    [RelayCommand]
+    private void ToggleCategoryManagement() =>
+        IsManagingCategories = !IsManagingCategories;
+
+    [RelayCommand(CanExecute = nameof(CanCreateCategory))]
+    private async Task CreateCategoryAsync()
+    {
+        var category = await categoryService.CreateCategoryAsync(new CategoryDto
+        {
+            Name = NewCategoryName.Trim()
+        });
+
+        Categories.Add(category);
+        NewCategoryName = string.Empty;
+    }
+
+    [RelayCommand]
+    private async Task DeleteCategoryAsync(CategoryDto category)
+    {
+        await categoryService.DeleteCategoryAsync(category.Id);
+        Categories.Remove(category);
+        await LoadDecksAsync();
+    }
 
     public Task<string> ExportAsync() => importExportService.ExportAsync();
 
@@ -79,4 +117,7 @@ public partial class DeckListViewModel(
         await deckService.DeleteDeckAsync(deck.Id);
         Decks.Remove(deck);
     }
+
+    private bool CanCreateCategory() =>
+        !string.IsNullOrWhiteSpace(NewCategoryName);
 }

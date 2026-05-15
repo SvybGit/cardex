@@ -2,6 +2,7 @@
 
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:dto="clr-namespace:Cardex.Model.Dtos;assembly=Model"
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              xmlns:vm="clr-namespace:ViewModel;assembly=ViewModel"
              x:DataType="vm:DeckListViewModel"
@@ -20,8 +21,46 @@
                      Clicked="ImportClicked" />
     </ContentPage.ToolbarItems>
     <VerticalStackLayout Padding="16" Spacing="12">
-        <Button Text="Create deck"
-                Command="{Binding CreateDeckCommand}" />
+        <Grid ColumnDefinitions="*,*"
+              ColumnSpacing="8">
+            <Button Grid.Column="0"
+                    Text="Create deck"
+                    Command="{Binding CreateDeckCommand}" />
+            <Button Grid.Column="1"
+                    Text="Manage categories"
+                    Command="{Binding ToggleCategoryManagementCommand}" />
+        </Grid>
+
+        <VerticalStackLayout IsVisible="{Binding IsManagingCategories}"
+                             Spacing="8">
+            <Grid ColumnDefinitions="*,Auto"
+                  ColumnSpacing="8">
+                <Entry Grid.Column="0"
+                       Placeholder="Category name"
+                       Text="{Binding NewCategoryName}" />
+                <Button Grid.Column="1"
+                        Text="Add"
+                        Command="{Binding CreateCategoryCommand}" />
+            </Grid>
+
+            <CollectionView ItemsSource="{Binding Categories}">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="dto:CategoryDto">
+                        <Grid ColumnDefinitions="*,Auto"
+                              ColumnSpacing="8"
+                              Padding="0,4">
+                            <Label Grid.Column="0"
+                                   Text="{Binding Name}"
+                                   VerticalOptions="Center" />
+                            <Button Grid.Column="1"
+                                    Text="Delete"
+                                    Command="{Binding BindingContext.DeleteCategoryCommand, Source={x:Reference DecksPage}}"
+                                    CommandParameter="{Binding .}" />
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </VerticalStackLayout>
 
         <CollectionView ItemsSource="{Binding Decks}">
             <CollectionView.ItemTemplate>

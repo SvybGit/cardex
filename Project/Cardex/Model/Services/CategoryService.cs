@@ -35,31 +35,15 @@ public class CategoryService(CardexDbContext dbContext)
         return CategoryMapper.ToDto(entity);
     }
 
-    public async Task<CategoryDto> UpdateCategoryAsync(CategoryDto category)
-    {
-        var entity = await dbContext.Categories.FindAsync(category.Id);
-        if (entity is null)
-        {
-            throw new InvalidOperationException("Category does not exist.");
-        }
-
-        entity.Name = category.Name;
-
-        await dbContext.SaveChangesAsync();
-
-        return CategoryMapper.ToDto(entity);
-    }
-
     public async Task DeleteCategoryAsync(int id)
     {
         var category = await dbContext.Categories.FindAsync(id);
-        if (category is not null && await dbContext.Decks.AnyAsync(deck => deck.CategoryId == id))
-        {
-            throw new InvalidOperationException("Cannot delete a category that is used by decks.");
-        }
-
         if (category is not null)
         {
+            await dbContext.Decks
+                .Where(deck => deck.CategoryId == id)
+                .ExecuteUpdateAsync(setters => setters.SetProperty(deck => deck.CategoryId, (int?)null));
+
             dbContext.Categories.Remove(category);
             await dbContext.SaveChangesAsync();
         }
