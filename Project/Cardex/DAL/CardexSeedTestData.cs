@@ -200,7 +200,8 @@ public static class CardexSeedData
                 DeckId = 1,
                 StartedAt = new DateTime(2026, 5, 6, 15, 0, 0, DateTimeKind.Utc),
                 FinishedAt = new DateTime(2026, 5, 6, 15, 15, 0, DateTimeKind.Utc),
-                TotalCards = 3
+                TotalCards = 3,
+                CurrentCardIndex = 3
             },
             new StudySessionEntity
             {
@@ -208,7 +209,8 @@ public static class CardexSeedData
                 DeckId = 2,
                 StartedAt = new DateTime(2026, 5, 6, 16, 0, 0, DateTimeKind.Utc),
                 FinishedAt = new DateTime(2026, 5, 6, 16, 20, 0, DateTimeKind.Utc),
-                TotalCards = 3
+                TotalCards = 3,
+                CurrentCardIndex = 3
             },
             new StudySessionEntity
             {
@@ -216,7 +218,8 @@ public static class CardexSeedData
                 DeckId = 3,
                 StartedAt = new DateTime(2026, 5, 7, 9, 0, 0, DateTimeKind.Utc),
                 FinishedAt = new DateTime(2026, 5, 7, 9, 12, 0, DateTimeKind.Utc),
-                TotalCards = 3
+                TotalCards = 3,
+                CurrentCardIndex = 3
             },
             new StudySessionEntity
             {
@@ -224,7 +227,8 @@ public static class CardexSeedData
                 DeckId = 5,
                 StartedAt = new DateTime(2026, 5, 7, 10, 0, 0, DateTimeKind.Utc),
                 FinishedAt = null,
-                TotalCards = 3
+                TotalCards = 3,
+                CurrentCardIndex = 2
             });
 
         modelBuilder.Entity<CardResultEntity>().HasData(

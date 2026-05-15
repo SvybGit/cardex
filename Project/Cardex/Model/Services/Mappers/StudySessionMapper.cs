@@ -13,7 +13,8 @@ public static class StudySessionMapper
             DeckId = database.DeckId,
             StartedAt = database.StartedAt,
             FinishedAt = database.FinishedAt,
-            TotalCards = database.TotalCards
+            TotalCards = database.TotalCards,
+            CurrentCardIndex = database.CurrentCardIndex
         };
     }
 
@@ -25,7 +26,8 @@ public static class StudySessionMapper
             DeckId = dto.DeckId,
             StartedAt = dto.StartedAt,
             FinishedAt = dto.FinishedAt,
-            TotalCards = dto.TotalCards
+            TotalCards = dto.TotalCards,
+            CurrentCardIndex = dto.CurrentCardIndex
         };
     }
 }

@@ -7,6 +7,7 @@ public class StudySessionEntity
     public DateTime StartedAt { get; set; }
     public DateTime? FinishedAt { get; set; }
     public int TotalCards { get; set; }
+    public int CurrentCardIndex { get; set; }
 
     public DeckEntity Deck { get; set; } = null!;
     public ICollection<CardResultEntity> CardResults { get; set; } = new List<CardResultEntity>();

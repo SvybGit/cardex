@@ -7,4 +7,5 @@ public class StudySessionDto
     public DateTime StartedAt { get; set; }
     public DateTime? FinishedAt { get; set; }
     public int TotalCards { get; set; }
+    public int CurrentCardIndex { get; set; }
 }
