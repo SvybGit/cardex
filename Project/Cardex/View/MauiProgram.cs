@@ -47,6 +47,11 @@ public static class MauiProgram
         builder.Services.AddTransient<StudySessionPage>();
 
         var app = builder.Build();
+
+        using var scope = app.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<CardexDbContext>();
+        dbContext.Database.EnsureCreated();
+
         return app;
     }
 }

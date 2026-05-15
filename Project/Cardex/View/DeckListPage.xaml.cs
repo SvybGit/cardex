@@ -16,7 +16,7 @@ public partial class DeckListPage : ContentPage
 
     private async void DeckItemTapped(object? sender, TappedEventArgs e)
     {
-        if (e.Parameter is not DeckItemViewModel deck)
+        if (e.Parameter is not DeckItemViewModel deck || ViewModel.IsLoading)
         {
             return;
         }
