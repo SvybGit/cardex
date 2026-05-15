@@ -175,7 +175,15 @@ public partial class StudySessionViewModel(
         try
         {
             IsBusy = true;
-            await studySessionService.RecordCardResultAsync(sessionId!.Value, CurrentCard!.Id, rating, CurrentCardIndex + 1);
+            var ratedCard = CurrentCard!;
+
+            await studySessionService.RecordCardResultAsync(sessionId!.Value, ratedCard.Id, rating, CurrentCardIndex + 1);
+
+            if (rating == CardRating.Again)
+            {
+                Cards.Add(ratedCard);
+                TotalCards = Cards.Count;
+            }
 
             IsAnswerVisible = false;
             CurrentCardIndex++;
