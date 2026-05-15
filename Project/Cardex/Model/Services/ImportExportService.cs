@@ -35,8 +35,7 @@ public class ImportExportService(
         {
             categories[category.Id] = await categoryService.CreateCategoryAsync(new CategoryDto
             {
-                Name = category.Name,
-                Color = category.Color
+                Name = category.Name
             });
         }
 

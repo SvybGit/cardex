@@ -10,8 +10,7 @@ public static class CategoryMapper
         return new CategoryDto
         {
             Id = database.Id,
-            Name = database.Name,
-            Color = database.Color
+            Name = database.Name
         };
     }
 
@@ -20,8 +19,7 @@ public static class CategoryMapper
         return new CategoryEntity
         {
             Id = dto.Id,
-            Name = dto.Name,
-            Color = dto.Color
+            Name = dto.Name
         };
     }
 }

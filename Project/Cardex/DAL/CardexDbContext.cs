@@ -23,10 +23,6 @@ public class CardexDbContext(DbContextOptions<CardexDbContext> options) : DbCont
                 .IsRequired()
                 .HasMaxLength(100);
 
-            entity.Property(category => category.Color)
-                .IsRequired()
-                .HasMaxLength(32);
-
         });
 
         modelBuilder.Entity<DeckEntity>(entity =>

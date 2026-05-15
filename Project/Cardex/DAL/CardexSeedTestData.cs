@@ -12,26 +12,22 @@ public static class CardexSeedData
             new CategoryEntity
             {
                 Id = 1,
-                Name = "Programming",
-                Color = "#2563EB"
+                Name = "Programming"
             },
             new CategoryEntity
             {
                 Id = 2,
-                Name = "Databases",
-                Color = "#16A34A"
+                Name = "Databases"
             },
             new CategoryEntity
             {
                 Id = 3,
-                Name = "Languages",
-                Color = "#F97316"
+                Name = "Languages"
             },
             new CategoryEntity
             {
                 Id = 4,
-                Name = "Computer Science",
-                Color = "#9333EA"
+                Name = "Computer Science"
             });
 
         modelBuilder.Entity<DeckEntity>().HasData(

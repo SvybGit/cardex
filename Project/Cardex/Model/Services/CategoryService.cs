@@ -44,7 +44,6 @@ public class CategoryService(CardexDbContext dbContext)
         }
 
         entity.Name = category.Name;
-        entity.Color = category.Color;
 
         await dbContext.SaveChangesAsync();
 
