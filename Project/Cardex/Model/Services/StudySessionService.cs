@@ -76,7 +76,17 @@ public class StudySessionService(CardexDbContext dbContext)
             .ToListAsync();
     }
 
-    public async Task<CardResultDto> RecordCardResultAsync(int sessionId, int cardId, CardRating rating, int currentCardIndex)
+    public async Task<List<int>> GetRepeatedCardIdsForSessionAsync(int sessionId)
+    {
+        return await dbContext.CardResults
+            .AsNoTracking()
+            .Where(result => result.SessionId == sessionId && result.Rating == CardRating.Again)
+            .OrderBy(result => result.Id)
+            .Select(result => result.CardId)
+            .ToListAsync();
+    }
+
+    public async Task<CardResultDto> RecordCardResultAsync(int sessionId, int cardId, CardRating rating, int currentCardIndex, int totalCards)
     {
         var session = await dbContext.StudySessions.FindAsync(sessionId) ?? throw new ArgumentException("Study session does not exist.", nameof(sessionId));
 
@@ -96,6 +106,7 @@ public class StudySessionService(CardexDbContext dbContext)
 
         dbContext.CardResults.Add(entity);
         session.CurrentCardIndex = currentCardIndex;
+        session.TotalCards = totalCards;
         await dbContext.SaveChangesAsync();
 
         return CardResultMapper.ToDto(entity);

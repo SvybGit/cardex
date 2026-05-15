@@ -12,8 +12,8 @@ public partial class StudySessionViewModel(
     StudySessionService studySessionService,
     INavigationService navigationService) : ObservableObject
 {
-    private int? sessionId;
-    private bool hasLoaded;
+    private int? _sessionId;
+    private bool _hasLoaded;
 
     [ObservableProperty]
     public partial DeckDto? Deck { get; set; }
@@ -64,7 +64,7 @@ public partial class StudySessionViewModel(
 
     public double StudyProgress => TotalCards == 0
         ? 0
-        : (double)CurrentCardNumber / TotalCards;
+        : Math.Min(1, (double)CurrentCardNumber / TotalCards);
 
     public bool CanShowCurrentCard => CurrentCard is not null && !IsComplete;
 
@@ -83,7 +83,7 @@ public partial class StudySessionViewModel(
     [RelayCommand]
     private async Task LoadSessionAsync()
     {
-        if (IsLoading || hasLoaded)
+        if (IsLoading || _hasLoaded)
         {
             return;
         }
@@ -97,10 +97,9 @@ public partial class StudySessionViewModel(
                 throw new InvalidOperationException("Deck was not provided.");
             }
 
-            Cards = new ObservableCollection<CardDto>(await deckService.GetCardsForDeckAsync(Deck.Id));
-            TotalCards = Cards.Count;
+            var baseCards = await deckService.GetCardsForDeckAsync(Deck.Id);
 
-            if (TotalCards == 0)
+            if (baseCards.Count == 0)
             {
                 throw new InvalidOperationException("This deck has no cards to study.");
             }
@@ -109,12 +108,17 @@ public partial class StudySessionViewModel(
                 ? await studySessionService.RestartStudySessionAsync(Deck.Id)
                 : await studySessionService.GetActiveSessionForDeckAsync(Deck.Id)
                   ?? await studySessionService.StartStudySessionAsync(Deck.Id);
-            sessionId = session.Id;
+            _sessionId = session.Id;
 
+            var repeatedCardIds = await studySessionService.GetRepeatedCardIdsForSessionAsync(session.Id);
+            var repeatedCards = repeatedCardIds.Select(id => baseCards.First(card => card.Id == id));
+
+            Cards = new ObservableCollection<CardDto>(baseCards.Concat(repeatedCards));
+            TotalCards = Cards.Count;
             CurrentCardIndex = session.CurrentCardIndex;
             LoadCurrentCard();
             IsAnswerVisible = false;
-            hasLoaded = true;
+            _hasLoaded = true;
         }
         finally
         {
@@ -148,7 +152,7 @@ public partial class StudySessionViewModel(
     [RelayCommand]
     private async Task EndSessionAsync()
     {
-        if (sessionId is null || IsBusy)
+        if (_sessionId is null || IsBusy)
         {
             return;
         }
@@ -156,7 +160,7 @@ public partial class StudySessionViewModel(
         try
         {
             IsBusy = true;
-            await studySessionService.FinishStudySessionAsync(sessionId.Value);
+            await studySessionService.FinishStudySessionAsync(_sessionId.Value);
             await navigationService.GoBackAsync();
         }
         finally
@@ -176,13 +180,14 @@ public partial class StudySessionViewModel(
         {
             IsBusy = true;
             var ratedCard = CurrentCard!;
+            var nextTotalCards = rating == CardRating.Again ? TotalCards + 1 : TotalCards;
 
-            await studySessionService.RecordCardResultAsync(sessionId!.Value, ratedCard.Id, rating, CurrentCardIndex + 1);
+            await studySessionService.RecordCardResultAsync(_sessionId!.Value, ratedCard.Id, rating, CurrentCardIndex + 1, nextTotalCards);
 
             if (rating == CardRating.Again)
             {
                 Cards.Add(ratedCard);
-                TotalCards = Cards.Count;
+                TotalCards = nextTotalCards;
             }
 
             IsAnswerVisible = false;
@@ -211,7 +216,7 @@ public partial class StudySessionViewModel(
     private bool CanRateCurrentCard() =>
         IsAnswerVisible
         && !IsBusy
-        && sessionId is not null
+        && _sessionId is not null
         && CurrentCard is not null
         && !IsComplete;
 }
