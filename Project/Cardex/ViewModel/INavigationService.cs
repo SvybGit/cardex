@@ -6,6 +6,6 @@ public interface INavigationService
 {
     Task GoToCreateDeckAsync();
     Task GoToEditDeckAsync(DeckDto deck);
-    Task GoToStudySessionAsync(DeckDto deck);
+    Task GoToStudySessionAsync(DeckDto deck, bool startNew);
     Task GoBackAsync();
 }

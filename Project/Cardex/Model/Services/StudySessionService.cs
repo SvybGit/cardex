@@ -9,6 +9,27 @@ namespace Cardex.Model.Services;
 
 public class StudySessionService(CardexDbContext dbContext)
 {
+    public async Task<StudySessionDto?> GetActiveSessionForDeckAsync(int deckId)
+    {
+        var session = await dbContext.StudySessions
+            .AsNoTracking()
+            .Where(session => session.DeckId == deckId && session.FinishedAt == null)
+            .OrderByDescending(session => session.StartedAt)
+            .FirstOrDefaultAsync();
+
+        return session is null ? null : StudySessionMapper.ToDto(session);
+    }
+
+    public async Task<List<int>> GetDeckIdsWithActiveSessionsAsync()
+    {
+        return await dbContext.StudySessions
+            .AsNoTracking()
+            .Where(session => session.FinishedAt == null)
+            .Select(session => session.DeckId)
+            .Distinct()
+            .ToListAsync();
+    }
+
     public async Task<StudySessionDto> StartStudySessionAsync(int deckId, DateTime? startedAt = null)
     {
         if (!await dbContext.Decks.AnyAsync(deck => deck.Id == deckId))
@@ -21,13 +42,20 @@ public class StudySessionService(CardexDbContext dbContext)
         {
             DeckId = deckId,
             StartedAt = startedAt ?? DateTime.UtcNow,
-            TotalCards = totalCards
+            TotalCards = totalCards,
+            CurrentCardIndex = 0
         };
 
         dbContext.StudySessions.Add(entity);
         await dbContext.SaveChangesAsync();
 
         return StudySessionMapper.ToDto(entity);
+    }
+
+    public async Task<StudySessionDto> RestartStudySessionAsync(int deckId, DateTime? startedAt = null)
+    {
+        await DeleteActiveSessionsForDeckAsync(deckId);
+        return await StartStudySessionAsync(deckId, startedAt);
     }
 
     public async Task<StudySessionDto?> GetStudySessionByIdAsync(int id)
@@ -48,19 +76,11 @@ public class StudySessionService(CardexDbContext dbContext)
             .ToListAsync();
     }
 
-    public async Task<CardResultDto> RecordCardResultAsync(int sessionId, int cardId, CardRating rating)
+    public async Task<CardResultDto> RecordCardResultAsync(int sessionId, int cardId, CardRating rating, int currentCardIndex)
     {
-        var session = await dbContext.StudySessions.FindAsync(sessionId);
-        if (session is null)
-        {
-            throw new ArgumentException("Study session does not exist.", nameof(sessionId));
-        }
+        var session = await dbContext.StudySessions.FindAsync(sessionId) ?? throw new ArgumentException("Study session does not exist.", nameof(sessionId));
 
-        var card = await dbContext.Cards.FindAsync(cardId);
-        if (card is null)
-        {
-            throw new ArgumentException("Card does not exist.", nameof(cardId));
-        }
+        var card = await dbContext.Cards.FindAsync(cardId) ?? throw new ArgumentException("Card does not exist.", nameof(cardId));
 
         if (card.DeckId != session.DeckId)
         {
@@ -75,6 +95,7 @@ public class StudySessionService(CardexDbContext dbContext)
         };
 
         dbContext.CardResults.Add(entity);
+        session.CurrentCardIndex = currentCardIndex;
         await dbContext.SaveChangesAsync();
 
         return CardResultMapper.ToDto(entity);
@@ -82,16 +103,27 @@ public class StudySessionService(CardexDbContext dbContext)
 
     public async Task<StudySessionDto> FinishStudySessionAsync(int sessionId, DateTime? finishedAt = null)
     {
-        var session = await dbContext.StudySessions.FindAsync(sessionId);
-        if (session is null)
-        {
-            throw new InvalidOperationException("Study session does not exist.");
-        }
+        var session = await dbContext.StudySessions.FindAsync(sessionId) ?? throw new InvalidOperationException("Study session does not exist.");
 
         session.FinishedAt = finishedAt ?? DateTime.UtcNow;
 
         await dbContext.SaveChangesAsync();
 
         return StudySessionMapper.ToDto(session);
+    }
+
+    private async Task DeleteActiveSessionsForDeckAsync(int deckId)
+    {
+        var activeSessions = await dbContext.StudySessions
+            .Where(session => session.DeckId == deckId && session.FinishedAt == null)
+            .ToListAsync();
+
+        if (activeSessions.Count == 0)
+        {
+            return;
+        }
+
+        dbContext.StudySessions.RemoveRange(activeSessions);
+        await dbContext.SaveChangesAsync();
     }
 }

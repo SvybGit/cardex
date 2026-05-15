@@ -14,6 +14,37 @@ public partial class DeckListPage : ContentPage
 
     private DeckListViewModel ViewModel => (DeckListViewModel)BindingContext;
 
+    private async void DeckItemTapped(object? sender, TappedEventArgs e)
+    {
+        if (e.Parameter is not DeckItemViewModel deck)
+        {
+            return;
+        }
+
+        if (!deck.HasActiveSession)
+        {
+            await ViewModel.StudyDeckCommand.ExecuteAsync(deck);
+            return;
+        }
+
+        var action = await DisplayActionSheetAsync(
+            "Study session in progress",
+            "Close",
+            null,
+            "Continue",
+            "Start new");
+
+        switch (action)
+        {
+            case "Continue":
+                await ViewModel.ContinueStudyCommand.ExecuteAsync(deck);
+                return;
+            case "Start new":
+                await ViewModel.StartNewStudyCommand.ExecuteAsync(deck);
+                break;
+        }
+    }
+
     private async void ExportClicked(object? sender, EventArgs e)
     {
         await using var stream = new MemoryStream(Encoding.UTF8.GetBytes(await ViewModel.ExportAsync()));

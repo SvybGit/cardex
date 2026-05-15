@@ -7,6 +7,7 @@ namespace ViewModel;
 
 public partial class DeckListViewModel(
     DeckService deckService,
+    StudySessionService studySessionService,
     ImportExportService importExportService,
     INavigationService navigationService) : ObservableObject
 {
@@ -27,12 +28,13 @@ public partial class DeckListViewModel(
         {
             IsLoading = true;
             var decks = await deckService.GetAllDecksAsync();
+            var activeSessionDeckIds = await studySessionService.GetDeckIdsWithActiveSessionsAsync();
             var deckItems = new List<DeckItemViewModel>();
 
             foreach (var deck in decks)
             {
                 var cards = await deckService.GetCardsForDeckAsync(deck.Id);
-                deckItems.Add(new DeckItemViewModel(deck, cards.Count));
+                deckItems.Add(new DeckItemViewModel(deck, cards.Count, activeSessionDeckIds.Contains(deck.Id)));
             }
 
             Decks = new ObservableCollection<DeckItemViewModel>(deckItems);
@@ -56,25 +58,24 @@ public partial class DeckListViewModel(
     }
 
     [RelayCommand]
-    private Task EditDeckAsync(DeckItemViewModel? deck) =>
-        deck is null
-            ? Task.CompletedTask
-            : navigationService.GoToEditDeckAsync(deck.Deck);
+    private Task EditDeckAsync(DeckItemViewModel deck) =>
+        navigationService.GoToEditDeckAsync(deck.Deck);
 
     [RelayCommand]
-    private Task StudyDeckAsync(DeckItemViewModel? deck) =>
-        deck is null
-            ? Task.CompletedTask
-            : navigationService.GoToStudySessionAsync(deck.Deck);
+    private Task StudyDeckAsync(DeckItemViewModel deck) =>
+        navigationService.GoToStudySessionAsync(deck.Deck, !deck.HasActiveSession);
 
     [RelayCommand]
-    private async Task DeleteDeckAsync(DeckItemViewModel? deck)
+    private Task ContinueStudyAsync(DeckItemViewModel deck) =>
+        navigationService.GoToStudySessionAsync(deck.Deck, false);
+
+    [RelayCommand]
+    private Task StartNewStudyAsync(DeckItemViewModel deck) =>
+        navigationService.GoToStudySessionAsync(deck.Deck, true);
+
+    [RelayCommand]
+    private async Task DeleteDeckAsync(DeckItemViewModel deck)
     {
-        if (deck is null)
-        {
-            return;
-        }
-
         await deckService.DeleteDeckAsync(deck.Id);
         Decks.Remove(deck);
     }

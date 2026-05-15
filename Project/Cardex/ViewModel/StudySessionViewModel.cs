@@ -19,6 +19,9 @@ public partial class StudySessionViewModel(
     public partial DeckDto? Deck { get; set; }
 
     [ObservableProperty]
+    public partial bool StartNew { get; set; }
+
+    [ObservableProperty]
     public partial ObservableCollection<CardDto> Cards { get; set; } = [];
 
     [ObservableProperty]
@@ -102,13 +105,15 @@ public partial class StudySessionViewModel(
                 throw new InvalidOperationException("This deck has no cards to study.");
             }
 
-            var session = await studySessionService.StartStudySessionAsync(Deck.Id);
+            var session = StartNew
+                ? await studySessionService.RestartStudySessionAsync(Deck.Id)
+                : await studySessionService.GetActiveSessionForDeckAsync(Deck.Id)
+                  ?? await studySessionService.StartStudySessionAsync(Deck.Id);
             sessionId = session.Id;
 
-            CurrentCardIndex = 0;
-            CurrentCard = Cards[CurrentCardIndex];
+            CurrentCardIndex = session.CurrentCardIndex;
+            LoadCurrentCard();
             IsAnswerVisible = false;
-            IsComplete = false;
             hasLoaded = true;
         }
         finally
@@ -136,6 +141,9 @@ public partial class StudySessionViewModel(
 
     [RelayCommand]
     private Task RateEasyAsync() => RateCurrentCardAsync(CardRating.Easy);
+
+    [RelayCommand]
+    private Task LeaveSessionAsync() => navigationService.GoBackAsync();
 
     [RelayCommand]
     private async Task EndSessionAsync()
@@ -167,24 +175,29 @@ public partial class StudySessionViewModel(
         try
         {
             IsBusy = true;
-            await studySessionService.RecordCardResultAsync(sessionId!.Value, CurrentCard!.Id, rating);
+            await studySessionService.RecordCardResultAsync(sessionId!.Value, CurrentCard!.Id, rating, CurrentCardIndex + 1);
 
             IsAnswerVisible = false;
-
-            if (CurrentCardIndex + 1 < TotalCards)
-            {
-                CurrentCardIndex++;
-                CurrentCard = Cards[CurrentCardIndex];
-                return;
-            }
-
-            CurrentCard = null;
-            IsComplete = true;
+            CurrentCardIndex++;
+            LoadCurrentCard();
         }
         finally
         {
             IsBusy = false;
         }
+    }
+
+    private void LoadCurrentCard()
+    {
+        if (CurrentCardIndex >= TotalCards)
+        {
+            CurrentCard = null;
+            IsComplete = true;
+            return;
+        }
+
+        CurrentCard = Cards[CurrentCardIndex];
+        IsComplete = false;
     }
 
     private bool CanRateCurrentCard() =>

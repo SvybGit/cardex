@@ -29,7 +29,7 @@
         <VerticalStackLayout Grid.Row="0"
                              Spacing="10"
                              IsVisible="{Binding CanShowCurrentCard}">
-            <Grid ColumnDefinitions="*,Auto"
+            <Grid ColumnDefinitions="*,Auto,Auto"
                   ColumnSpacing="12">
                 <Label Grid.Column="0"
                        Text="{Binding Deck.Name, FallbackValue=''}"
@@ -49,6 +49,10 @@
                         </FormattedString>
                     </Label.FormattedText>
                 </Label>
+                <Button Grid.Column="2"
+                        Text="Leave"
+                        Padding="12,6"
+                        Command="{Binding LeaveSessionCommand}" />
             </Grid>
 
             <ProgressBar Progress="{Binding StudyProgress}"

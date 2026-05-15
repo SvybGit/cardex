@@ -62,25 +62,49 @@
                         </FlyoutBase.ContextFlyout>
                         <Border.GestureRecognizers>
                             <TapGestureRecognizer
-                                Command="{Binding BindingContext.StudyDeckCommand, Source={x:Reference DecksPage}}"
-                                CommandParameter="{Binding .}" />
+                                CommandParameter="{Binding .}"
+                                Tapped="DeckItemTapped" />
                         </Border.GestureRecognizers>
                         <Grid RowDefinitions="Auto,Auto"
-                              RowSpacing="4">
-                            <Label Grid.Row="0"
-                                   Text="{Binding Name}"
-                                   FontAttributes="Bold"
-                                   FontSize="16" />
-                            <HorizontalStackLayout Grid.Row="1"
-                                                   Spacing="6">
-                                <Label Text="{Binding CardCount, StringFormat='{0} cards'}"
+                              RowSpacing="8">
+                            <Grid Grid.Row="0"
+                                  ColumnDefinitions="*,Auto"
+                                  ColumnSpacing="8">
+                                <Label Grid.Column="0"
+                                       Text="{Binding Name}"
+                                       FontAttributes="Bold"
+                                       FontSize="16" />
+                                <Label Grid.Column="1"
+                                       Text="In progress"
+                                       IsVisible="{Binding HasActiveSession}"
+                                       FontAttributes="Bold"
                                        FontSize="12"
-                                       TextColor="{StaticResource Gray500}" />
-                                <Label Text="{Binding CategoryName, StringFormat='| {0}'}"
-                                       IsVisible="{Binding HasCategory}"
-                                       FontSize="12"
-                                       TextColor="{StaticResource Gray500}" />
-                            </HorizontalStackLayout>
+                                       HorizontalTextAlignment="End"
+                                       TextColor="{StaticResource PrimaryDark}" />
+                            </Grid>
+                            <Grid Grid.Row="1"
+                                  ColumnDefinitions="*,Auto"
+                                  ColumnSpacing="8">
+                                <HorizontalStackLayout Grid.Column="0"
+                                                       Spacing="6"
+                                                       VerticalOptions="Center">
+                                    <Label Text="{Binding CardCount, StringFormat='{0} cards'}"
+                                           FontSize="12"
+                                           TextColor="{StaticResource Gray500}" />
+                                    <Label Text="{Binding CategoryName, StringFormat='| {0}'}"
+                                           IsVisible="{Binding HasCategory}"
+                                           FontSize="12"
+                                           TextColor="{StaticResource Gray500}" />
+                                </HorizontalStackLayout>
+                                <Button Grid.Column="1"
+                                        Text="Continue"
+                                        IsVisible="{Binding HasActiveSession}"
+                                        FontSize="13"
+                                        Padding="12,6"
+                                        MinimumHeightRequest="0"
+                                        Command="{Binding BindingContext.ContinueStudyCommand, Source={x:Reference DecksPage}}"
+                                        CommandParameter="{Binding .}" />
+                            </Grid>
                         </Grid>
                     </Border>
                 </DataTemplate>

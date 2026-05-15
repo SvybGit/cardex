@@ -4,6 +4,7 @@ using ViewModel;
 namespace View;
 
 [QueryProperty(nameof(Deck), "deck")]
+[QueryProperty(nameof(StartNew), "startNew")]
 public partial class StudySessionPage : ContentPage
 {
     private readonly StudySessionViewModel viewModel;
@@ -11,6 +12,11 @@ public partial class StudySessionPage : ContentPage
     public DeckDto Deck
     {
         set => viewModel.Deck = value;
+    }
+
+    public bool StartNew
+    {
+        set => viewModel.StartNew = value;
     }
 
     public StudySessionPage(StudySessionViewModel viewModel)
